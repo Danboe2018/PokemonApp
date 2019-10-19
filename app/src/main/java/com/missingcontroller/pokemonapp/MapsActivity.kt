@@ -1,9 +1,14 @@
 package com.missingcontroller.pokemonapp
 
+import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 
@@ -14,6 +19,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Exception
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -36,7 +42,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(
                     this, android.Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED) {
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 requestPermissions(
                     arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                     ACCESSLOCATION
@@ -44,21 +51,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 return
             }
         }
-
-        getUserLocation()
     }
 
     fun getUserLocation() {
         Toast.makeText(this, "User location access on", Toast.LENGTH_LONG).show()
+
+        var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        var myLocation = MyLocationListener()
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3,3f, myLocation)
+
+        var MyThread=MyThread()
+        MyThread.start()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode){
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
             ACCESSLOCATION -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getUserLocation()
                 } else {
-                    Toast.makeText(this,"We cannot access to your location", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "We cannot access to your location", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
         }
@@ -76,14 +94,71 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(
-            MarkerOptions()
-                .position(sydney)
-                .title("Me")
-                .snippet(" here is my location ")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mario))
-        )
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+
+    }
+
+    var location: Location? = null
+
+    // Get user location
+
+    inner class MyLocationListener : LocationListener {
+
+        constructor() {
+            Log.wtf("GPS", "Constructor")
+            location = Location("Start")
+            location!!.longitude = 0.0
+            location!!.latitude = 0.0
+        }
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+            Log.wtf("GPS", "onStatusChanged: $provider")
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        override fun onProviderEnabled(provider: String?) {
+            Log.wtf("GPS", "onProviderEnabled: $provider")
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        override fun onProviderDisabled(provider: String?) {
+            Log.wtf("GPS", "onProviderDisabled: $provider")
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        override fun onLocationChanged(p0: Location?) {
+            Log.wtf("GPS", "Location: $p0")
+            location = p0
+        }
+
+    }
+
+    inner class MyThread:Thread {
+        constructor():super(){
+
+        }
+
+        override fun run(){
+            while (true){
+                try {
+                    runOnUiThread {
+                        Log.wtf("GPS", "Location: ${location!!.latitude} and ${location!!.longitude}")
+                        mMap.clear()
+                        val sydney = LatLng(location!!.latitude, location!!.longitude)
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .position(sydney)
+                                .title("Me")
+                                .snippet(" here is my location ")
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mario))
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+                    }
+
+                    Thread.sleep(1000)
+                } catch (ex:Exception){
+
+                }
+            }
+        }
     }
 }
