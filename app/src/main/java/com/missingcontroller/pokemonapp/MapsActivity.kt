@@ -34,6 +34,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         checkPermission()
+        loadPokemon()
     }
 
     val ACCESSLOCATION = 123
@@ -59,9 +60,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         var myLocation = MyLocationListener()
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3,3f, myLocation)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f, myLocation)
 
-        var MyThread=MyThread()
+        var MyThread = MyThread()
         MyThread.start()
     }
 
@@ -132,17 +133,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    inner class MyThread:Thread {
-        constructor():super(){
+    var oldLocation: Location? = null
+
+    inner class MyThread : Thread {
+        constructor() : super() {
+            oldLocation = Location("Start")
+            oldLocation!!.latitude = 0.0
+            oldLocation!!.longitude = 0.0
 
         }
 
-        override fun run(){
-            while (true){
+        override fun run() {
+            while (true) {
                 try {
+                    if(oldLocation!!.distanceTo(location) ==0f){
+                        continue
+                    }
+
+                    oldLocation = location
+
                     runOnUiThread {
-                        Log.wtf("GPS", "Location: ${location!!.latitude} and ${location!!.longitude}")
+                        Log.wtf(
+                            "GPS",
+                            "Location: ${location!!.latitude} and ${location!!.longitude}"
+                        )
                         mMap.clear()
+
+                        // show me
                         val sydney = LatLng(location!!.latitude, location!!.longitude)
                         mMap.addMarker(
                             MarkerOptions()
@@ -152,13 +169,73 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.mario))
                         )
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+
+                        // show pokemon
+
+                        for (i in 0 until listPokemon.size) {
+                            var newPokemon = listPokemon[i]
+                            if (newPokemon.IsCatch == false) {
+                                val pockemonLoc = LatLng(
+                                    newPokemon.location!!.latitude,
+                                    newPokemon.location!!.longitude
+                                )
+                                mMap!!.addMarker(
+                                    MarkerOptions()
+                                        .position(pockemonLoc)
+                                        .title(newPokemon.name!!)
+                                        .snippet(newPokemon.des!! + ", power:" + newPokemon!!.power)
+                                        .icon(BitmapDescriptorFactory.fromResource(newPokemon.image!!))
+                                )
+
+
+                                if (location!!.distanceTo(newPokemon.location) < 2) {
+                                    newPokemon.IsCatch = true
+                                    listPokemon[i] = newPokemon
+//                                    playerPower += newPokemon.power!!
+//                                    Toast.makeText(
+//                                        applicationContext,
+//                                        "You catch new pockemon your new pwoer is " + playerPower,
+//                                        Toast.LENGTH_LONG
+//                                    ).show()
+
+                                }
+                            }
+                        }
                     }
 
                     Thread.sleep(1000)
-                } catch (ex:Exception){
+                } catch (ex: Exception) {
 
                 }
             }
         }
+    }
+
+    var listPokemon = ArrayList<Pokemon>()
+
+    fun loadPokemon() {
+        listPokemon.add(
+            Pokemon(
+                R.drawable.charmander,
+                "Charmander",
+                "Charmander living in japan",
+                55.0,
+                37.7789994893035,
+                -122.401846647263
+            )
+        )
+        listPokemon.add(
+            Pokemon(
+                R.drawable.bulbasaur,
+                "Bulbasaur", "Bulbasaur living in usa", 90.5, 37.7949568502667, -122.410494089127
+            )
+        )
+        listPokemon.add(
+            Pokemon(
+                R.drawable.squirtle,
+                "Squirtle", "Squirtle living in iraq", 33.5, 37.7816621152613, -122.41225361824
+            )
+        )
+
     }
 }
