@@ -146,7 +146,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         override fun run() {
             while (true) {
                 try {
-                    if(oldLocation!!.distanceTo(location) ==0f){
+                    if (oldLocation!!.distanceTo(location) == 0f) {
                         continue
                     }
 
@@ -175,13 +175,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         for (i in 0 until listPokemon.size) {
                             var newPokemon = listPokemon[i]
                             if (newPokemon.IsCatch == false) {
-                                val pockemonLoc = LatLng(
+                                val pokemonLoc = LatLng(
                                     newPokemon.location!!.latitude,
                                     newPokemon.location!!.longitude
                                 )
                                 mMap!!.addMarker(
                                     MarkerOptions()
-                                        .position(pockemonLoc)
+                                        .position(pokemonLoc)
                                         .title(newPokemon.name!!)
                                         .snippet(newPokemon.des!! + ", power:" + newPokemon!!.power)
                                         .icon(BitmapDescriptorFactory.fromResource(newPokemon.image!!))
@@ -191,13 +191,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 if (location!!.distanceTo(newPokemon.location) < 2) {
                                     newPokemon.IsCatch = true
                                     listPokemon[i] = newPokemon
-//                                    playerPower += newPokemon.power!!
-//                                    Toast.makeText(
-//                                        applicationContext,
-//                                        "You catch new pockemon your new pwoer is " + playerPower,
-//                                        Toast.LENGTH_LONG
-//                                    ).show()
-
+                                    playerPower += newPokemon.power!!
+                                    Toast.makeText(
+                                        applicationContext,
+                                        "You catch new pokemon your new power is " + playerPower,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         }
@@ -211,6 +210,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    var playerPower = 0.0
     var listPokemon = ArrayList<Pokemon>()
 
     fun loadPokemon() {
