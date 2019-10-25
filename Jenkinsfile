@@ -2,6 +2,9 @@ pipeline {
     agent {
         label 'android'
     }
+    options {
+        timeout(time: 10, unit: 'MINUTES') 
+    }
     stages {
         stage('clean') {
             steps { 
