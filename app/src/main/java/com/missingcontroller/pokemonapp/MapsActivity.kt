@@ -57,22 +57,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onMarkerClick(p0: Marker?) = false
 
     private fun getAddress(latLng: LatLng): String {
-        // 1
         val geocoder = Geocoder(this)
         val addresses: List<Address>?
         val address: Address?
         var addressText = ""
 
         try {
-            // 2
             addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
-            // 3
-            if (null != addresses && !addresses.isEmpty()) {
+            if (null != addresses && addresses.isNotEmpty()) {
                 address = addresses[0]
                 for (i in 0 until address.maxAddressLineIndex) {
-                    addressText += if (i == 0) address.getAddressLine(i) else "\n" + address.getAddressLine(
-                        i
-                    )
+                    addressText += if (i == 0) address.getAddressLine(i) else "\n" + address.getAddressLine(i)
                 }
             }
         } catch (e: IOException) {
@@ -85,7 +80,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        map.getUiSettings().setZoomControlsEnabled(true)
+        map.getUiSettings().isZoomControlsEnabled = true
         map.setOnMarkerClickListener(this)
 
         setUpMap()
@@ -117,7 +112,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
-            null /* Looper */
+            null
         )
     }
 
@@ -206,7 +201,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-        // 3
         private const val REQUEST_CHECK_SETTINGS = 2
     }
 }
